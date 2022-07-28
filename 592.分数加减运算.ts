@@ -95,19 +95,19 @@ const popHeadFraction = (str: string): [Fraction, string] => {
 /**
  * 俩分数相加, 返回一个分数，未化简
  */
-const addFraction = (a: Fraction, b: Fraction): Fraction => {
-    const numerator = Math.imul(a[0], b[1]) + Math.imul(b[0] , a[1]) | 0;
-    const denominator = Math.imul(a[1], b[1]);
+const addFraction = ([aN, aD]: Fraction, [bN, bD]: Fraction): Fraction => {
+    const numerator = Math.imul(aN, bD) + Math.imul(bN, aD) | 0;
+    const denominator = Math.imul(aD, bD);
     return [numerator, denominator];
 }
 
 /**
  * 化简一个分数，并返回字符串化的形式
  */
-const simplifyFraction = (fraction: Fraction): string => {
-    const g = gcd(Math.abs(fraction[0]), fraction[1]);
-    const numerator = fraction[0] / g;
-    const denominator = fraction[1] / g;
+const simplifyFraction = ([oldNumerator, oldDenominator]: Fraction): string => {
+    const g = gcd(Math.abs(oldNumerator), oldDenominator);
+    const numerator = oldNumerator / g;
+    const denominator = oldDenominator / g;
     return numerator === 0 ? '0/1' : `${numerator}/${denominator}`;
 }
 
