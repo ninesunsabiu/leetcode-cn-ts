@@ -65,7 +65,7 @@ const gcd = (a: number, b: number): number => {
     return b === 0 ? a : gcd(b, a % b);
 }
 
-type Fraction = [denominator: number, numerator: number];
+type Fraction = [numerator: number, denominator: number];
 
 const zeroFraction: Fraction = [0, 1];
 
@@ -75,19 +75,19 @@ const zeroFraction: Fraction = [0, 1];
  * 
  * @example
  * ```typescript
- * const [[denominator, numerator], restStr] = popHeadFraction('-1/2+1/2+4/31+5/1')
+ * const [[numerator, denominator], restStr] = popHeadFraction('-1/2+1/2+4/31+5/1')
  * 
- * assert(denominator).toBe(-1)
- * assert(numerator).toBe(2)
+ * assert(numerator).toBe(-1)
+ * assert(denominator).toBe(2)
  * assert(restStr).toBe('+1/2+4/31+5/1')
  * ```
  */
 const popHeadFraction = (str: string): [Fraction, string] => {
     // 分子分母捕获表达式
-    const regexp = /^(?<denominator>[-+]?\d+?)\/(?<numerator>\d+)(?<rest>.*)/;
+    const regexp = /^(?<numerator>[-+]?\d+?)\/(?<denominator>\d+)(?<rest>.*)/;
     const match = regexp.exec(str)?.groups;
     return match ? [
-        [Number.parseInt(match.denominator), Number.parseInt(match.numerator)],
+        [Number.parseInt(match.numerator), Number.parseInt(match.denominator)],
         match.rest
     ] : [zeroFraction, ''] 
 } 
@@ -96,9 +96,9 @@ const popHeadFraction = (str: string): [Fraction, string] => {
  * 俩分数相加, 返回一个分数，未化简
  */
 const addFraction = (a: Fraction, b: Fraction): Fraction => {
-    const denominator = Math.imul(a[0], b[1]) + Math.imul(b[0] , a[1]) | 0;
-    const numerator = Math.imul(a[1], b[1]);
-    return [denominator, numerator];
+    const numerator = Math.imul(a[0], b[1]) + Math.imul(b[0] , a[1]) | 0;
+    const denominator = Math.imul(a[1], b[1]);
+    return [numerator, denominator];
 }
 
 /**
@@ -106,9 +106,9 @@ const addFraction = (a: Fraction, b: Fraction): Fraction => {
  */
 const simplifyFraction = (fraction: Fraction): string => {
     const g = gcd(Math.abs(fraction[0]), fraction[1]);
-    const denominator = fraction[0] / g;
-    const numerator = fraction[1] / g;
-    return denominator === 0 ? '0/1' : `${denominator}/${numerator}`;
+    const numerator = fraction[0] / g;
+    const denominator = fraction[1] / g;
+    return numerator === 0 ? '0/1' : `${numerator}/${denominator}`;
 }
 
 function fractionAddition(expression: string): string {
