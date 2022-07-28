@@ -67,6 +67,8 @@ const gcd = (a: number, b: number): number => {
 
 type Fraction = [denominator: number, numerator: number];
 
+const zeroFraction: Fraction = [0, 1];
+
 /**
  * 对一个字符串，从左边开始，读取到一个完整的分数
  * 返回这个分数，和剩余的字符串
@@ -84,7 +86,10 @@ const popHeadFraction = (str: string): [Fraction, string] => {
     // 分子分母捕获表达式
     const regexp = /^(?<denominator>[-+]?\d+?)\/(?<numerator>\d+)(?<rest>.*)/;
     const match = regexp.exec(str)?.groups;
-    return match ? [[Number.parseInt(match.denominator), Number.parseInt(match.numerator)], match.rest] : [[0, 1], ''] 
+    return match ? [
+        [Number.parseInt(match.denominator), Number.parseInt(match.numerator)],
+        match.rest
+    ] : [zeroFraction, ''] 
 } 
 
 /**
@@ -101,7 +106,9 @@ const addFraction = (a: Fraction, b: Fraction): Fraction => {
  */
 const simplifyFraction = (fraction: Fraction): string => {
     const g = gcd(Math.abs(fraction[0]), fraction[1]);
-    return `${fraction[0] / g}/${fraction[1] / g}`;
+    const denominator = fraction[0] / g;
+    const numerator = fraction[1] / g;
+    return denominator === 0 ? '0/1' : `${denominator}/${numerator}`;
 }
 
 function fractionAddition(expression: string): string {
@@ -113,12 +120,10 @@ function fractionAddition(expression: string): string {
             return resolveItRec(addFraction(acc, fraction), rest);
         }
     }
-    const f = resolveItRec([0, 1], expression);
-    if (f[0] === 0) {
-        return '0/1';
-    } else {
-        return simplifyFraction(f);
-    }
-};
+
+    return simplifyFraction(
+        resolveItRec(zeroFraction, expression)
+    )
+}
 // @lc code=end
 
