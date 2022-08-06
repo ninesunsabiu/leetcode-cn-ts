@@ -64,22 +64,25 @@ const isSub = (a: string) => {
 }
 
 function stringMatching(words: string[]): string[] {
-    // 数组个数载 [1, 100] 之间，两个 for 循环暴力模拟 才 100_00 次
-    // 感觉应该也不会爆炸
-    // 碰碰运气先试试
-    const wordsEntries = Array.from(words.entries()) 
+    // 按单词长度，升序排列
+    // 这样可以保证，再查询某个单词是否是其余单词的子字符串时，可以只向后查询，而不必向前查询
+    // 因为 字符串长度较长的一个单词，必然不会是一个字符串较短的单词的子字符串
+    const sortedByWordLength = Array.from(words.sort((a, b) => a.length - b.length).entries()) 
 
-    const ans = new Set<string>()
+    const ans: string[] = []
 
-    for (const [i, a] of wordsEntries) {
-        for (const [j, b] of wordsEntries) {
-            if (i !== j && isSub(a)(b)) {
-                ans.add(a)
+    for (const [i, a] of sortedByWordLength) {
+        for (const [, b] of sortedByWordLength.slice(i + 1)) {
+            if (isSub(a)(b)) {
+                ans.push(a)
+                // 单词 a 只要查找到满足其中一个
+                // 就可以跳出循环，判断下一个 a
+                break
             }
         }
     }
 
-    return Array.from(ans) 
+    return ans 
 };
 // @lc code=end
 
