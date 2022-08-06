@@ -64,25 +64,16 @@ const isSub = (a: string) => {
 }
 
 function stringMatching(words: string[]): string[] {
-    // 按单词长度，升序排列
-    // 这样可以保证，再查询某个单词是否是其余单词的子字符串时，可以只向后查询，而不必向前查询
-    // 因为 字符串长度较长的一个单词，必然不会是一个字符串较短的单词的子字符串
-    const sortedByWordLength = Array.from(words.sort((a, b) => a.length - b.length).entries()) 
+    const joinedStr = words.join('#')
 
-    const ans: string[] = []
-
-    for (const [i, a] of sortedByWordLength) {
-        for (const [, b] of sortedByWordLength.slice(i + 1)) {
-            if (isSub(a)(b)) {
-                ans.push(a)
-                // 单词 a 只要查找到满足其中一个
-                // 就可以跳出循环，判断下一个 a
-                break
-            }
+    return words.filter(
+        (it) => {
+            // 每个单词，若在 `joinedStr` 中出现了 两次 （自己存在必然有一次）或以上
+            // 则表明 这个单词，是其他单词的子字符串
+            const count = joinedStr.match(new RegExp(it, 'g'))?.length ?? 0
+            return count > 1
         }
-    }
-
-    return ans 
+    )
 };
 // @lc code=end
 
