@@ -50,23 +50,18 @@ export {}
 // @lc code=start
 /**
  * 正规化字符串  
- * 去掉非字母和数字的其余字符
+ * 去掉非字母和数字的其余字符  
+ * 并转化为小写
  */
 const filterOutAlphaAndDigit = (s: string) => {
-    return s.replace(/[^\da-zA-Z]/g, '')
-}
-
-const check = (s: string) => {
-    const lengthOfS = s.length
-    return lengthOfS <= 1 ? true : (() => {
-        // 判断头尾是否相等，如果是的话，剥离头尾，递归判断
-        return new RegExp(s[lengthOfS - 1], 'i').test(s[0]) ? check(s.slice(1, lengthOfS - 1)) : false
-    })()
+    return s.replace(/[^\da-zA-Z]/g, '').toLocaleLowerCase()
 }
 
 function isPalindrome(s: string): boolean {
     const str = filterOutAlphaAndDigit(s);
-    return check(str);
+    const middleOffset = Math.round(str.length / 2)
+    const tail = str.slice(middleOffset)
+    return str.startsWith(Array.from(tail).reverse().join('')) 
 };
 // @lc code=end
 
