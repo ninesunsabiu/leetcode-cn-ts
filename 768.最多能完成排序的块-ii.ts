@@ -125,17 +125,7 @@ function maxChunksToSorted(arr: number[]): number {
 
     const ans = allChunks.reduce<MyList<Chunk>>(
         (/* 已经分好组的集合 */list, cur) => {
-            const lastChunkDataMax = list?.hd.max ?? Number.POSITIVE_INFINITY
-
-            return (lastChunkDataMax <= cur.min 
-                // 满足 下一个分块独立成组 加入分好的集合
-                ? identity 
-                // 不满足 独立分块的情况
-                // 调整分组情况
-                : adjustListRec
-            )(
-                cons(cur)(list)
-            )
+            return adjustListRec(cons(cur)(list))
         },
         nil
     )
