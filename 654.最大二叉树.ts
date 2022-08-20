@@ -125,14 +125,32 @@ const splitNumArrayByMax = (nums: NonEmptyArray<number>): SplitRet => {
 }
 
 function constructMaximumBinaryTree(nums: NonEmptyArray<number>): TreeNode | null {
-    const buildTreeRec = (nums: NonEmptyArray<number>): TreeNode => {
-        const { left, maxNum, right } = splitNumArrayByMax(nums)
-        const leftTree = isNonEmptyArray(left) ? buildTreeRec(left) : null
-        const rightTree = isNonEmptyArray(right) ? buildTreeRec(right) : null
-        return setChildren({ left: leftTree, right: rightTree })(ofTreeNode(maxNum))
-    }
+    // 深度优先搜索的 cps 调用
+    const buildTreeRec = (
+        k: (children: TreeNode) => TreeNode,
+        nums: NonEmptyArray<number>,
+    ): TreeNode => {
+        const { left, right, maxNum } = splitNumArrayByMax(nums);
+        const node = ofTreeNode(maxNum);
 
-    return buildTreeRec(nums)
+        const doNext = (k: (children: TreeNode | null) => TreeNode, nums: Array<number>): TreeNode => {
+            return isNonEmptyArray(nums) ? buildTreeRec(k, nums) : k(null);
+        };
+
+        return doNext(
+            (childOfLeft) => {
+                return doNext(
+                    (childOfRight) => {
+                        return k(setChildren({ left: childOfLeft, right: childOfRight })(node))
+                    },
+                    right
+                )
+            },
+            left,
+        );
+    };
+
+    return buildTreeRec(it => it, nums)
 };
 // @lc code=end
 
