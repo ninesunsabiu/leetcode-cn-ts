@@ -61,11 +61,6 @@
  * 
  */
 export {}
-type TreeNode = {
-    val: number;
-    left: TreeNode | null;
-    right: TreeNode | null;
-};
 // @lc code=start
 /**
  * Definition for a binary tree node.
@@ -80,77 +75,95 @@ type TreeNode = {
  *     }
  * }
  */
+function constructMaximumBinaryTree(nums: NonEmptyArray<number>): MyTreeNode | null {
+    const foldByRightChild = (right: MyTreeNode<number> | null, parent: MyTreeNode<number>): MyTreeNode<number> => {
+        return setChildren({ right })(parent)
+    }
+
+    const buildTreeRec = (list: List<MyTreeNode<number>>, nums: NonEmptyArray<number>): MyTreeNode<number> => {
+        const [hdVal, ...tl] = nums;
+        const curTreeNode = ofTreeNode(hdVal);
+
+        // 取出当前 list 中 比 `hdVal` 小的串，并转化为 TreeNode
+        // 这个 TreeNode 作为 `curTreeNode` 的左子树
+        const { ret: leftChild, rest } = foldUntil<MyTreeNode<number>>(
+            // 取出所有比 `hdVal` 小的元素
+            (i) => i.val < hdVal
+        )<MyTreeNode<number> | null>(
+            null,
+            // 所有比 `hdVal` 小的元素 都是当前 `curTreeNode` 的左子树
+            // 自身又因为 list 是从左向右构建的，右在 hd 左在 tai 所以以右子树的形式相连
+            foldByRightChild
+        )(list);
+
+        const curResult = setChildren({ left: leftChild })(curTreeNode)
+
+        return isNonEmptyArray(tl)
+            // 当 `tl` 不为空时，继续递归构建树
+            ? buildTreeRec(cons(curResult)(rest), tl)
+                // 如果没有 `tl` 为空 说明没有剩余元素了
+                // 此时 list 是一个严格递减的 List
+                // 则返回对 list 整体清空的结果 即是结果
+            : fold<MyTreeNode<number>, MyTreeNode<number>>(curResult, foldByRightChild)(rest).ret
+    }
+
+    return buildTreeRec(nil, nums)
+};
+
+type MyTreeNode<T = number> = {
+    val: T;
+    left: MyTreeNode<T> | null;
+    right: MyTreeNode<T> | null;
+};
+
+/////////// NonEmptyArray ///////////////
 type NonEmptyArray<T> = [T, ...T[]]
-const isNonEmptyArray = <T>(arr: Array<T>): arr is NonEmptyArray<T> => arr.length > 0
+const isNonEmptyArray = <T>(list: Array<T>): list is NonEmptyArray<T> => list.length > 0
 
-const ofTreeNode = (val: number): TreeNode => ({ val, left: null, right: null })
+/////////// Tree ///////////////
+const ofTreeNode = <T = number>(val: T): MyTreeNode<T> => ({ val, left: null, right: null })
 
-const setChildren = (children: { left?: TreeNode | null; right?: TreeNode | null }) => {
-    return (node: TreeNode): TreeNode => {
+const setChildren = <T = number>(children: { left?: MyTreeNode<T> | null; right?: MyTreeNode<T> | null }) => {
+    return (node: MyTreeNode<T>): MyTreeNode<T> => {
         const { left, right } = children
         return { ...node, ...(left !== undefined && { left } ), ...(right !== undefined && { right }) }
     }
 }
 
-type SplitRet = {
-    left: Array<number>;
-    maxNum: number;
-    right: Array<number>;
+//////////// List ///////////////
+type Nil = null
+type Cons<T> = { hd: T; tl: List<T> }
+type List<T> = Nil | Cons<T>
+
+const nil = null
+const cons = <T>(hd: T) =>(tl: List<T>): Cons<T> => ({ hd, tl })
+const matchList = <A, B>(
+    onNil: () => B,
+    onCons: (hd: A, tl: List<A>) => B
+) => (list: List<A>) => {
+    return list ? onCons(list.hd, list.tl) : onNil()
 }
 
-const splitNumArrayByMax = (nums: NonEmptyArray<number>): SplitRet => {
+const foldUntil = <A>(pred: (a: A) => boolean) => {
+    return <B>(zero: B, fn: (b: B, a: A) => B) => {
+        return (list: List<A>): { ret: B, rest: List<A> } => {
+            const doRecursion = (param: { ret: B, rest: List<A> }): typeof param => {
+                const { ret, rest: list } = param;
+                return matchList<A, typeof param>(
+                    () => param,
+                    (hd, tl) => pred(hd) ? doRecursion({ ret: fn(ret, hd), rest: tl }) : param
+                )(list)
+            }
 
-    const getMaximumItemIndex = (
-        maximum: { idx: number; val: number },
-        curIdx: number,
-        nums: Array<number>
-    ): typeof maximum => {
-        return !isNonEmptyArray(nums)
-            ? maximum
-            : (() => {
-                  const [head, ...tail] = nums;
-                  const { val } = maximum;
-                  return getMaximumItemIndex(head > val ? { idx: curIdx, val: head } : maximum, curIdx + 1, tail);
-              })();
-    };
-
-    const { idx, val } = getMaximumItemIndex({ idx: 0, val: -1 }, 0, nums)
-
-    return {
-        left: nums.slice(0, idx),
-        maxNum: val,
-        right: nums.slice(idx + 1),
-    }
-
-}
-
-function constructMaximumBinaryTree(nums: NonEmptyArray<number>): TreeNode | null {
-    // 深度优先搜索的 cps 调用
-    const buildTreeRec = (
-        k: (children: TreeNode) => TreeNode,
-        nums: NonEmptyArray<number>,
-    ): TreeNode => {
-        const { left, right, maxNum } = splitNumArrayByMax(nums);
-        const node = ofTreeNode(maxNum);
-
-        const doNext = (k: (children: TreeNode | null) => TreeNode, nums: Array<number>): TreeNode => {
-            return isNonEmptyArray(nums) ? buildTreeRec(k, nums) : k(null);
+            return doRecursion({ ret: zero, rest: list })
         };
+    }
+}
 
-        return doNext(
-            (childOfLeft) => {
-                return doNext(
-                    (childOfRight) => {
-                        return k(setChildren({ left: childOfLeft, right: childOfRight })(node))
-                    },
-                    right
-                )
-            },
-            left,
-        );
-    };
+const fold = <A, B>(zero: B, fn: (b: B, a: A) => B) => foldUntil<A>(constTrue)(zero, fn)
 
-    return buildTreeRec(it => it, nums)
-};
+///////////// function ///////////////
+const constTrue = () => true
+
 // @lc code=end
 
