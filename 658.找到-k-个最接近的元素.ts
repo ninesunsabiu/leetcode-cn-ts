@@ -50,29 +50,79 @@
  * 
  * 
  */
-
+export {}
 // @lc code=start
 function findClosestElements(arr: number[], k: number, x: number): number[] {
-    const numberOrder = (a: number, b: number) => 
-                     a < b ? -1 : a === b ? 0 : 1
+    const getInstance = (a: number) => (b: number) => Math.abs(a - b | 0)
 
-    return [...arr]
-        .sort(
-            (a, b) => {
-                const distanceOfA = Math.abs(a - x | 0)
-                const distanceOfB = Math.abs(b - x | 0)
-                if (distanceOfA < distanceOfB) {
-                    return -1
-                } else if (distanceOfA === distanceOfB) {
-                    return numberOrder(a, b)
-                } else {
-                    // distanceOfA > distanceOfB
-                    return 1
-                }
+    const { left, right } = takeWhile((it: number): it is number => it <= x)(arr)
+
+    const ans: Array<number> = []
+
+    const leftIter = left.values()
+    const rightIter = right.values()
+
+    let leftTop = leftIter.next()
+    let rightTop = rightIter.next()
+
+    while (ans.length < k) {
+        const existSize = ans.length
+        const getInstanceOfX = getInstance(x);
+
+        // 模式匹配结果 2 X 2 四种情况
+        if (leftTop.done === true && rightTop.done === false) {
+            // 左侧用尽，右侧有剩余，则剩余容量的所有右侧，均需要放入数组
+            ans.push(rightTop.value)
+            ans.push(
+                ...Array.from(rightIter).slice(0, k - existSize - 1 | 0)
+            )
+        } else if (leftTop.done === false && rightTop.done === true) {
+            // 同上
+            ans.unshift(leftTop.value)
+            ans.unshift(
+                ...Array.from(leftIter).slice(0, k - existSize - 1 | 0).reverse()
+            )
+        } else if (leftTop.done === true && rightTop.done === true) {
+            return  ans
+        } else if (leftTop.done === false && rightTop.done === false) {
+            const instanceOfLeft = getInstanceOfX(leftTop.value) 
+            const instanceOfRight = getInstanceOfX(rightTop.value) 
+
+            if (instanceOfLeft <= instanceOfRight) {
+                ans.unshift(leftTop.value)
+                leftTop = leftIter.next()
+            } else {
+                ans.push(rightTop.value)
+                rightTop = rightIter.next()
             }
-        )
-        .slice(0, k)
-        .sort(numberOrder)
+        } else {
+            // 异常情况 这里应该枚举完了才对
+            return ans 
+        }
+    }
+
+    return ans
 };
+
+/**
+ * 将数组一直取出
+ */
+ const takeWhile = <T, U extends T = T>(pred: (it: T) => it is U) => {
+    return (as: Array<T>): Record<'left' | 'right', Array<T>> => {
+        const entries = as.values()
+        const left: Array<T> = []
+        const right: Array<T> = []
+        for (const item of entries) {
+            if (pred(item)) {
+                left.unshift(item)
+            } else {
+                right.push(item)
+                break;
+            }
+        }
+        return { left, right: [...right, ...Array.from(entries)] }
+    }
+
+}
 // @lc code=end
 
