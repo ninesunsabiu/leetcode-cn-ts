@@ -69,6 +69,7 @@ function uniqueLetterString(s: string): number {
     return ofLazyPipe(() => Array.from(s))
         .pipe(getAllCharIndexArray)
         .pipe(
+            // 稀疏数组使用 map API 会跳过空洞
             it => it.map(getContributionCountFn)
         )
         .pipe(sumNumberArray)
@@ -77,36 +78,21 @@ function uniqueLetterString(s: string): number {
 
 type Char = string;
 
-/**
- * 得到一个项在数组中的所有索引位置
- */
-const getItemIndex = (char: Char, s: Array<Char>): Array<number> => {
-    return s.flatMap(
-        (c, idx) => {
-            return c === char ? [idx] : []
-        }
-    )
-}
-
 const upperCaseAlphaASCIICode = 'A'.charCodeAt(0)
 
 /**
- * 获得一个 26 个大写字母的数组  
+ * 获得一个 26 个大写字母的 稀疏数组  
  * 该数组的第 i 项，代表第 i 个字母在给定字符串中的所有索引位置
  */
 const getAllCharIndexArray = (s: Array<Char>): Array<Array<number>> => {
-    const ans = Array.from({ length: 26 }, (): Array<number> => [])
+    // 稀疏数组
+    const ans: Array<Array<number>> = []
 
-    for (const c of s) {
-        const idxOfAns = c.charCodeAt(0) - upperCaseAlphaASCIICode
-        const arrayInAns = ans[idxOfAns] ?? []
-        if (arrayInAns.length === 0) {
-            // 没有被统计过 进行统计
-            ans[idxOfAns] = getItemIndex(c, s)
-        } else {
-            // 已被统计过 直接跳过
-            continue
-        }
+    for (const [idxOfS, c] of s.entries()) {
+        const idxOfAns = c.charCodeAt(0) - upperCaseAlphaASCIICode | 0
+        const arrayInAns = ans[idxOfAns] ?? [];
+        ans[idxOfAns] = arrayInAns;
+        ans[idxOfAns]?.push(idxOfS);
     }
 
     return ans
@@ -123,9 +109,9 @@ const getContributionCount = (endForRight: number) => {
         let ans = 0
         for (const [idx, point] of indexInterval.entries()) {
             // 前一项
-            const prevPoint = indexInterval[idx - 1] ?? startOfLeft
-            const successorPoint = indexInterval[idx + 1] ?? endForRight
-            ans += (point - prevPoint) * (successorPoint - point)
+            const prevPoint = indexInterval[idx - 1 | 0] ?? startOfLeft
+            const successorPoint = indexInterval[idx + 1 | 0] ?? endForRight
+            ans += (point - prevPoint) * (successorPoint - point) | 0
         }
         return ans
     }
