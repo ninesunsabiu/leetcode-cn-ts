@@ -70,29 +70,22 @@
 export {}
 // @lc code=start
 function minOperations(logs: string[]): number {
+    const plus = (a: number) => (b: number) => b + a | 0
+    const safeAtZero = (lazy: (a: number) => number) => (a: number) => Math.max(0, lazy(a))
 
-    return logs.reduce<List<string>>(
-        (list, cur) => parse(cur)(list),
-        null
-    )?.length ?? 0
-};
-
-const parse = (log: string): (l: List<string>) => List<string> => {
-    switch (log) {
-        case "../":
-            return (list: List<string>) => list?.tail ?? null
-        case "./":
-            return it => it
-        default:
-            return cons(log)
+    const getBinary = (log: string) => {
+        const s = log.charAt(0)
+        const l = log.length
+        return s === '.' ? l === 3 ? safeAtZero(plus(-1)) : plus(0) : plus(1)
     }
-}
 
-type Nil = null
-type Cons<T> = { length: number, hd: T, tail: List<T> }
-type List<T> = Cons<T> | Nil
+    const fn = logs.reduce(
+        (binary, cur) => (it) => getBinary(cur)(binary(it)),
+        (i: number) => i
+    )
 
-const cons = <T>(i: T) => (list: List<T>) => ({ hd: i, tail: list, length: (list?.length ?? 0) + 1 | 0 })
+    return fn(0) 
+};
 
 // @lc code=end
 
