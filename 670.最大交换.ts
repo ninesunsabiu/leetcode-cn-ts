@@ -38,7 +38,7 @@
  * 
  * 
  */
-
+export {}
 // @lc code=start
 function maximumSwap(num: number): number {
     // 分割成数组 遍于操作
