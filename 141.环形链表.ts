@@ -83,11 +83,21 @@ type ListNode = { val: number; next: ListNode | null }
  */
 
 function hasCycle(head: ListNode | null): boolean {
-    try {
-        JSON.stringify(head)
+    if (head == null) {
         return false
-    } catch (error) {
-        return true
+    } else {
+        const doRecursion = (slower: ListNode | null, faster: ListNode | null): boolean => {
+            if (slower == null || faster == null) {
+                return false
+            } else {
+                return slower === faster ? true : doRecursion(
+                    slower.next,
+                    faster.next?.next ?? null
+                )
+            }
+        }
+
+        return doRecursion(head.next, head.next?.next ?? null)
     }
 };
 // @lc code=end
