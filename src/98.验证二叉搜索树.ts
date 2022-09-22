@@ -67,36 +67,42 @@
  */
 
 function isValidBST(root: TreeNode): boolean {
-    const checkRecursion = (
-        k: (p: [left: Array<number>, val: number, right: Array<number>]) => boolean,
-        node: TreeNode
-    ): boolean => {
+    type Range = [min: number, max: number]
+    type CheckP = [leftRange: Range | null, val: number, rightRange: Range | null]
+    const check = (p: CheckP) => {
+        const [maxL, v, minR] = p
+        const a = maxL?.[1] ?? -(2 ** 31 + 1)
+        const b = minR?.[0] ?? (2 ** 31)
+        return a < v && v < b
+    }
+    const newRange = (p: CheckP): Range => {
+        return [p[0]?.[0] ?? p[1], p[2]?.[1] ?? p[1]]
+    }
+
+    const checkRecursion = (k: (p: CheckP) => boolean, node: TreeNode): boolean => {
         const { left, val, right } = node;
 
         return left ? checkRecursion(
-            ([leftNodes, child, rightsNodes]) => {
-                const check = leftNodes.every(it => it < child) && rightsNodes.every(it => it > child)
-                return check && (right ? checkRecursion(
-                    ([l, c, r]) => {
-                        const check = l.every(it => it < c) && r.every(it => it > c)
-                        return check && k([[...leftNodes, child, ...rightsNodes], val, [...l, c, ...r]])
+            (leftInfo) => {
+                return check(leftInfo) && (right ? checkRecursion(
+                    (rightInfo) => {
+                        return check(rightInfo) && k([
+                            newRange(leftInfo),
+                            val,
+                            newRange(rightInfo)
+                        ])
                     },
                     right
-                ) : k([[...leftNodes, child, ...rightsNodes], val, []]))
+                ) : k([newRange(leftInfo), val, null]))
             },
             left
         ) : right ? checkRecursion(
-            ([l, c, r]) => {
-                const check = l.every(it => it < c) && r.every(it => it > c)
-                return check && k([[], val, [...l, c, ...r]])
-            },
+            (rightInfo) => check(rightInfo) && k([null, val, newRange(rightInfo)]),
             right
-        ) : k([[], val, []])
+        ) : k([null, val, null])
     }
 
-    return checkRecursion(([l, c, r]) => {
-        return l.every(it => it < c) && r.every(it => it > c)
-    }, root)
+    return checkRecursion(check, root)
 };
 
 // @lc code=end
