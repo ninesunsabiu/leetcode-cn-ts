@@ -58,37 +58,18 @@
 
 // @lc code=start
 function minAddToMakeValid(s: string): number {
-    type Stack = Array<string>
-    const leftBrace = "("
-    const rightBrace = ")";
-    const stackMatchRec = (stack: Stack, s: string): Stack => {
-        if (s.length === 0) {
-            return stack
+    const regex = /\(\)/g
+    const 去掉有效子字符串 = (s: string): string => {
+        const 去掉后 = s.replace(regex, "")
+        if (去掉后.length === s.length) {
+            // 不再发生变化 说明已经没有 “有效” 的串
+            return s
         } else {
-            const [head, tail] = [s.slice(0, 1), s.slice(1)]
-            if (head === rightBrace) {
-                // 从栈顶尽可能的弹出一个左括号 作为匹配
-                const top = stack.pop()
-                if (top === leftBrace) {
-                    // 没毛病 不处理
-                    // 和 head 配对成功 一起消失
-                } else if (top === rightBrace){
-                    // 不是对应的 括号 要还回去
-                    // 并且当前的这个也要加进去
-                    stack.push(top, head)
-                } else {
-                    // 如果啥也没有了，那么自己加入
-                    stack.push(head)
-                }
-            } else {
-                // 否则 head 为左括号，入栈
-                stack.push(head)
-            }
-            return stackMatchRec(stack, tail)
+            return 去掉有效子字符串(去掉后)
         }
     }
 
-    return stackMatchRec([], s).length
+    return 去掉有效子字符串(s).length
 };
 // @lc code=end
 
