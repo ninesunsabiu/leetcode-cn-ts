@@ -52,52 +52,30 @@ function advantageCount(nums1: number[], nums2: number[]): number[] {
     const sortedNum2Entries = Array.from(nums2.entries())
                                     .sort(([, a], [, b]) => numberAsc(a, b))
 
-    type Item = Record<"item" | "idx", number>
-    const ans: [
-        /**
-         * 构成优势的数据
-         */
-        advantage: Array<Item>,
-        /**
-         * 无法构成优势的数据
-         */
-        noAdvantage: Array<Item>,
-        /**
-         * nums2 的模板数组
-         */
-        nums2: Array<[idx: number, value: number]>
-    ] = [[], [], sortedNum2Entries]
+    const empty: [
+        ans: Array<number>,
+        topPointer: number,
+        bottomPointer: number
+    ] = [[], 0, nums1.length - 1]
 
-    const [advantage, noAdvantage] = sortedNum1.reduce(
-        (ans, cur): typeof ans => {
-            const [a, n, nums2] = ans
-            if (nums2.length > 0) {
-                const [hd, tail, last] = [
-                    nums2[0],
-                    nums2.slice(1, -1),
-                    nums2[nums2.length - 1]
-                ]
-                const [originIdxForNum2, numInNums2] = hd!
-                if (cur > numInNums2) {
-                    // 加入优势数组
-                    const item = { idx: originIdxForNum2, item: cur }
-                    return [[...a, item], n, [...tail, last!]]
-                } else {
-                    // 否则找个最大数匹配消耗掉
-                    const item = { idx: last![0], item: cur }
-                    return [a, [item, ...n], [hd!, ...tail]]
-                }
+    const [ans] = sortedNum1.reduce(
+        (acc, cur): typeof acc => {
+            const [ans, top, bottom] = acc
+            const [originIdxForNum2, numInNums2] = sortedNum2Entries[top]!
+            if (cur > numInNums2) {
+                // 加入优势数组
+                ans[originIdxForNum2] = cur
+                return [ans, top + 1 | 0, bottom]
             } else {
-                // 无需匹配 由于 nums1 和 nums2 的长度相等
-                // 所以此处为理论不可达代码
-                return ans
+                // 否则找个最大数匹配消耗掉
+                const last = sortedNum2Entries[bottom]!
+                ans[last[0]] = cur
+                return [ans, top, bottom - 1 | 0]
             }
         },
-        ans
+        empty
     )
-
-    return [...advantage, ...noAdvantage].sort((a ,b) => numberAsc(a.idx, b.idx)).map(it => it.item)
-
+    return ans
 };
 
 const numberAsc = (a: number, b: number) => a - b
