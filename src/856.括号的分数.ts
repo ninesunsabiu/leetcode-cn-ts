@@ -60,56 +60,25 @@
 export {}
 // @lc code=start
 function scoreOfParentheses(s: string): number {
-    const program = (k: (score: number) => number, s: string): number => {
-        const [balanced, rest] = takeWhileBalanceParentheses(s)
-        if (balanced !== "()") {
-            const inner = balanced.slice(1, -1)
-            return program(
-                (score) => {
-                    const curScore = 2 * score
-                    if (rest.length > 0) {
-                        return program(
-                            (it) => k(curScore + it),
-                            rest
-                        )
-                    } else {
-                        return k(curScore)
-                    }
-                },
-                inner
+    // make ()() -> () + ()
+    const explicitPlus = s.replace(/\)\(/g, ")+(")
+    // make (()) -> (1)
+    const explicitInitScore = explicitPlus.replace(/\(\)/g, "1")
+
+    const computeRegex = /\((?<exp>[\d+]+)\)/g
+    const computeExp = (s: string) => s.split("+").map(it => Number(it)).reduce((a, b) => a + b)
+    const program = (s: string): number => {
+        if (computeRegex.test(s)) {
+            const runOnce = s.replace(
+                computeRegex,
+                (_, exp) => `${2 * computeExp(exp)}`
             )
+            return program(runOnce)
         } else {
-            return rest.length > 0 ? program((score) => k(1 + score), rest) : k(1)
+            return computeExp(s)
         }
-    
     }
-
-    return program(it => it, s)
+    return program(explicitInitScore)
 };
-
-type TakeWhileRet = [balanced: string, rest: string]
-const takeWhileBalanceParentheses = (s: string): TakeWhileRet => {
-    const leftParenthesis = "("
-    const getMarkScore = (it: string) => it === leftParenthesis ? -1 : 1
-
-    const program = (p: { result: string; score: number }, matching: string): TakeWhileRet => {
-        const { result, score } = p
-        if (score === 0) {
-            return [result, matching]
-        } else {
-            if (matching.length > 0) {
-                const [hd, rest] = [matching.slice(0, 1), matching.slice(1)]
-                return program(
-                    { result: result + hd, score: score + getMarkScore(hd) | 0 },
-                    rest
-                )
-            } else {
-                return [result, ""]
-            }
-        }
-    }
-    const [hd, rest] = [s.slice(0, 1), s.slice(1)]
-    return program({ result: hd, score: getMarkScore(hd) }, rest)
-}
 // @lc code=end
 
