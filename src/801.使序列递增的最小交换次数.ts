@@ -64,21 +64,50 @@
 export {}
 // @lc code=start
 function minSwap(nums1: number[], nums2: number[]): number {
-    const n = nums1.length
-    const f = new Array<[number, number]>(n)
-    f[0] = [0, 1]
-    for (let i = 1; i < n; i++) f[i] = [n + 10, n + 10]
-    for (let i = 1; i < n; i++) {
-        if (nums1[i]! > nums1[i - 1]! && nums2[i]! > nums2[i - 1]!) {
-            f[i]![0] = f[i - 1]![0]
-            f[i]![1] = f[i - 1]![1] + 1
+    type State = {
+        ans: [forNotSwap: number, forSwap: number];
+        prev: [num1: number, num2: number]
+    } 
+
+    const program = (prevState: State, { nums1, nums2 }: { nums1: Array<number>; nums2: Array<number> }): State => {
+        if (nums1.length > 0) {
+            // nums1.length === nums2.length
+            type NonEmptyArray = [number, ...Array<number>]
+            const [hd1, ...tail1] = nums1 as NonEmptyArray
+            const [hd2, ...tail2] = nums2 as NonEmptyArray
+            const { ans: [prevForNotSwap, prevForSwap], prev: [prev1, prev2] } = prevState
+
+            const ans = ((): State['ans'] => {
+                if ((prev1 < hd1 && prev2 < hd2) && (prev1 < hd2 && prev2 < hd1)) {
+                    // 当前 hd 不进行交换，则最小交换次数为 prev 交换 和 不交换的最小值
+                    // 如果 hd 进行交换，则最小交换次数为不交换次数 + 1
+                    const forNotSwap = Math.min(prevForNotSwap, prevForSwap)
+                    return [forNotSwap, forNotSwap + 1]
+                } else if (prev1 < hd1 && prev2 < hd2) {
+                    // 不交换时 不影响
+                    // 交换时，必须是交换 prev 的情况，再加 1
+                    return [prevForNotSwap, prevForSwap + 1]
+                } else {
+                    // 如果 hd 不互换，则 prev 必须换
+                    // 如果 hd 互换了，prev 必须不能换
+                    return [prevForSwap, prevForNotSwap + 1]
+                }
+            })()
+
+            return program({ ans, prev: [hd1, hd2] }, { nums1: tail1, nums2: tail2 })
+
+        } else {
+            return prevState
         }
-        if (nums1[i]! > nums2[i - 1]! && nums2[i]! > nums1[i - 1]!) {
-            f[i]![0] = Math.min(f[i]![0], f[i - 1]![1])
-            f[i]![1] = Math.min(f[i]![1], f[i - 1]![0] + 1)
-        }
+
     }
-    return Math.min(f[n - 1]![0], f[n - 1]![1])
+
+    const runRet = program({
+        ans: [0, 1],
+        prev: [nums1[0]!, nums2[0]!]
+    }, { nums1: nums1.slice(1), nums2: nums2.slice(1) }) 
+
+    return Math.min(...runRet.ans)
 }
 // @lc code=end
 
