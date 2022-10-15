@@ -73,23 +73,22 @@ function buildArray(target: number[], N: number): string[] {
     type Operate = "Push" | "Pop"
     const push: Operate = "Push"
     const pop: Operate = "Pop"
-    // 尾递归写法
-    const programRec = (ans: Array<Operate>) => {
-        return (n: number, targetStack: Array<number>): typeof ans => {
-            if (targetStack.length > 0 && n <= N) {
-                const hd = targetStack[0]
-                return n === hd
-                        // 相等时 使用 Push 操作 移除 hd
-                        ? programRec([...ans, push])(n + 1, targetStack.slice(1))
-                        // 不相等时 使用 Push Pop 操作
-                        : programRec([...ans, push, pop])(n + 1, targetStack)
-            } else {
-                return ans
-            }
-        } 
-    }
 
-    return programRec([])(1, target)
+    return target.reduce<{ ans: Array<Operate>; prev: number }>(
+        (acc, cur) => {
+            // 相邻两数缺少的元素个数
+            const count = cur - acc.prev - 1
+            // 缺少个数有几个 ，就有几个 [Push, Pop]
+            const middle = Array.from({ length: count }).flatMap(() => [push, pop])
+            return {
+                // 更新结果集
+                ans: [...acc.ans,  ...middle, push],
+                // 更新 前一个数
+                prev: cur 
+            }
+        },
+        { ans: [], prev: 0 }
+    ).ans
 };
 // @lc code=end
 
