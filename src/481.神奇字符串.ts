@@ -53,38 +53,51 @@
  */
 export {}
 // @lc code=start
-function magicalString(n: number): number {
-    let str = '01' // 首位多加一个 0 作为哨兵
-    const f = new Array<number>(n + 10).fill(0)
-    for (let i = 1, j = 1, cnt = 0; i <= n; j++) {
-        const last = str[str.length - 1], t = str[j]
-        if (last == '1') {
-            if (t == '1') {
-                // 当原串当前字符是 1，而计数串当前字符为 1 
-                // 往后构造形成的原串只能是 12，原串指针后移一位
-                str += '2'
-                f[i] = ++cnt; i++
-            } else {
-                // 当原串当前字符是 1，而计数串当前字符为 2
-                // 往后构造形成的原串只能是 112，此时同步更新 f[i + 1]，原串指针后移两位
-                str += '12'
-                f[i] = ++cnt; f[i + 1] = ++cnt; i += 2
+const makeMagicalString = () => {
+    const magicalStringCharacter: Array<2 | 1> = [1, 2, 2, 1]
+    let patternMakerIdx = 1
+    let idx = 0
+
+    return function* iter() {
+        while (true) {
+            // 生成神奇字符串
+            patternMakerIdx += 1
+            // p 表示当前字符应该连续出现的数量
+            const p = magicalStringCharacter[patternMakerIdx]!
+            // 神奇字符串最后一个字符的情况
+            const last = magicalStringCharacter[magicalStringCharacter.length - 1]!
+            // 模式匹配 p last 的情况
+            if (p === 2 && last === 1) {
+                magicalStringCharacter.push(1, 2)
+            } else if (p === 2 && last === 2) {
+                magicalStringCharacter.push(2, 1)
+            } else if (p === 1 && last === 1) {
+                magicalStringCharacter.push(2)
+            } else if (p === 1 && last === 2) {
+                magicalStringCharacter.push(1)
             }
-        } else {
-            if (t == '1') {
-                // 当原串当前字符是 2，而计数串当前字符为 1 
-                // 往后构造形成的原串只能是 21，原串指针后移一位
-                str += '1'
-                f[i] = cnt; i++
-            } else {
-                // 当原串当前字符是 2，而计数串当前字符为 2
-                // 往后构造形成的原串只能是 221，原串指针后移两位
-                str += '21'
-                f[i] = f[i + 1] = cnt; i += 2
-            }
+
+            yield magicalStringCharacter[idx]!
+            idx++
         }
+    }()
+}
+
+function magicalString(n: number): number {
+    const iter = makeMagicalString()
+    let ans = 0
+    let count = 0
+    for (const character of iter) {
+        if (count === n) {
+            break;
+        }
+        if (character === 1) {
+            ans++
+        }
+        count++
     }
-    return f[n]!
+
+    return ans
 }
 
 // @lc code=end
