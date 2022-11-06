@@ -64,7 +64,7 @@ function interpret(command: string): string {
     .replace(
         /\(\)/g,
         "o"
-    
+    ) 
 };
 // @lc code=end
 
