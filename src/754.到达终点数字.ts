@@ -59,45 +59,18 @@
  */
 export {}
 // @lc code=start
-/**
- * 获得一个数字 向左 和 向右 移动 n 步的结果
- * 形如一颗二叉树，左子树节点为向左，右子树节点为向右  
- * 第 level 层，对应其移动的距离
- */
-const ofChildren = (n: number, level: number) => {
-    return [n - level | 0, n + level | 0] as const
-}
-
-const makeConditionTreeIter = () => {
-    let level = 1
-    let nodes = new Set([0])
-    return function* () {
-        while (true) {
-            yield nodes
-            const nextNodes = new Set<number>()
-            nodes.forEach(
-                (v) => {
-                    const [a, b] = ofChildren(v, level)
-                    nextNodes.add(a)
-                    nextNodes.add(b)
-                }
-            )
-            nodes = nextNodes
-            level++
-        }
-    }()
-}
-
 function reachNumber(target: number): number {
-    const iter = makeConditionTreeIter()
-    let ans = 0
-    for (const nodes of iter) {
-        if (nodes.has(target)) {
-            return ans
+    const fallbackToPositive = Math.abs(target)
+
+    let s =0
+    let k = 0
+    while (true) {
+        if (s >= fallbackToPositive && ((s - fallbackToPositive) % 2 === 0)) {
+            return k
         }
-        ans++
+        ++k
+        s += k
     }
-    return ans
 };
 // @lc code=end
 
