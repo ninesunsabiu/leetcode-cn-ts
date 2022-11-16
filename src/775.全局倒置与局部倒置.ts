@@ -61,17 +61,36 @@
  * 
  * 
  */
-
+export {}
 // @lc code=start
+const range = (count: number, offset = 0) =>
+                Array.from({length: count}, (_, it) => it + offset | 0)
+
 function isIdealPermutation(nums: number[]): boolean {
-    let n = nums.length, min = nums[n - 1]!;
-    for (let i = n - 3; i >= 0; i--) {
-        if (nums[i]! > min!) {
-            return false;
+    let maxSeenArray = [-1]
+    for (const idx of range(nums.length - 1)) {
+        const [a, b] = [nums[idx]!, nums[idx+1]!]
+        const maxSeen = maxSeenArray[0]!
+        if (a > b) {
+            // 发生了下降
+            const theMax = maxSeen === a ? (maxSeenArray[1] ?? -1) : maxSeen
+            if (b < theMax) {
+                return false
+            } else {
+                maxSeenArray = [a, b]
+            }
+        } else {
+            // a < b
+            // 判断 b 是否比当前的最大值还大
+            if (b < maxSeen) {
+                return false
+            } else {
+                maxSeenArray = [b, Math.max(maxSeen, a)]
+            }
         }
-        min = Math.min(min, nums[i + 1]!);
     }
-    return true
+
+    return true 
 };
 // @lc code=end
 
