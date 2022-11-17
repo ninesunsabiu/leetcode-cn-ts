@@ -67,17 +67,15 @@ const range = (count: number, offset = 0) =>
                 Array.from({length: count}, (_, it) => it + offset | 0)
 
 function isIdealPermutation(nums: number[]): boolean {
-    let maxSeenArray = [-1]
+    let maxSeen = -1
     for (const idx of range(nums.length - 1)) {
         const [a, b] = [nums[idx]!, nums[idx+1]!]
-        const maxSeen = maxSeenArray[0]!
         if (a > b) {
             // 发生了下降
-            const theMax = maxSeen === a ? (maxSeenArray[1] ?? -1) : maxSeen
-            if (b < theMax) {
+            if (b < maxSeen) {
                 return false
             } else {
-                maxSeenArray = [a, b]
+                maxSeen = a
             }
         } else {
             // a < b
@@ -85,12 +83,12 @@ function isIdealPermutation(nums: number[]): boolean {
             if (b < maxSeen) {
                 return false
             } else {
-                maxSeenArray = [b, Math.max(maxSeen, a)]
+                maxSeen = Math.max(a, maxSeen)
             }
         }
     }
 
-    return true 
-};
+    return true
+}
 // @lc code=end
 
