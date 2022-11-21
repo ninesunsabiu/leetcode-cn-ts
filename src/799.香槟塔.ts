@@ -61,20 +61,45 @@
  */
 export {}
 // @lc code=start
-function champagneTower(poured: number, query_row: number, query_glass: number): number {
-    let row = [poured];
-    for (let i = 1; i <= query_row; i++) {
-        const nextRow = new Array(i + 1).fill(0);
-        for (let j = 0; j < i; j++) {
-            const volume = row[j]!;
-            if (volume > 1) {
-                nextRow[j] += (volume - 1) / 2;
-                nextRow[j + 1] += (volume - 1) / 2;
+
+function* pouringChampagne(total: number) {
+    let row = [total]
+    while (true) {
+        const len = row.length
+        let count = len 
+        const nextRow: Array<number> = Array.from({ length: len + 1 }, () => 0)
+        while (count) {
+            const idx = len - count 
+            const curGlass = row[idx] ?? 0
+            if (curGlass > 1) {
+                yield 1
+                // 如果满了的话,向下一层溢出
+                const extraHalf = (curGlass - 1) / 2
+                nextRow[idx] += extraHalf
+                nextRow[idx + 1] += extraHalf
+            } else {
+                yield curGlass
             }
+            count--
         }
-        row = nextRow;
+        row = nextRow
     }
-    return Math.min(1, row[query_glass]!)
+}
+
+function champagneTower(poured: number, row: number, glass: number): number {
+    // 查看所有杯子的数量计数器
+    let count = ((1 + (row)) * (row)) / 2 + (glass + 1)
+
+    // 迭代每一个杯子 直到查询的计数器到头
+    for (const i of pouringChampagne(poured)) {
+        if (count === 1) {
+            return i;
+        } 
+        // 查看过后计数器减1
+        count--
+    }
+
+    return -1
 };
 // @lc code=end
 
