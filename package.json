@@ -1,0 +1,19 @@
+{
+  "name": "leetcode",
+  "version": "1.0.0",
+  "description": "记录在 leetcode 上的做题之旅",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ninesunsabiu/leetcode-cn-ts.git"
+  },
+  "keywords": [
+    "leetcode"
+  ],
+  "author": "Ezio Lin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ninesunsabiu/leetcode-cn-ts/issues"
+  },
+  "homepage": "https://github.com/ninesunsabiu/leetcode-cn-ts#readme"
+}
