@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "description": "记录在 leetcode 上的做题之旅",
   "main": "index.js",
+  "scripts": {
+    "clean": "rescript clean",
+    "build": "rescript build",
+    "watch": "rescript build -w",
+    "format": "rescript format ./**/*.res"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ninesunsabiu/leetcode-cn-ts.git"
@@ -15,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/ninesunsabiu/leetcode-cn-ts/issues"
   },
-  "homepage": "https://github.com/ninesunsabiu/leetcode-cn-ts#readme"
+  "homepage": "https://github.com/ninesunsabiu/leetcode-cn-ts#readme",
+  "devDependencies": {
+    "rescript": "^10.0.1"
+  }
 }
