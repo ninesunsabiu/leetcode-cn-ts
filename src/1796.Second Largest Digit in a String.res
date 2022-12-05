@@ -55,12 +55,10 @@ module MakePrioritySetQueue = (Order: Order) => {
   let empty: t = None
 }
 
-module IntComp =
-  Belt.Id.MakeComparable({
-    type t = int 
-    let cmp = (a, b) => Pervasives.compare(a, b)
-  })
-
+module IntComp = Belt.Id.MakeComparable({
+  type t = int
+  let cmp = (a, b) => Pervasives.compare(a, b)
+})
 
 let secondHighest = s => {
   let digitRe = %re("/\d/")
@@ -72,28 +70,22 @@ let secondHighest = s => {
   let queue =
     Js.Array2.from(s)
     ->Js.Array2.filter(Js.Re.test_(digitRe, _))
-    ->Belt.Array.flatMap(
-        it => {
-            switch it->Belt.Int.fromString {
-            | Some(int) => [int] 
-            | None => [] 
-            }
-        }
-    )
+    ->Belt.Array.flatMap(it => {
+      switch it->Belt.Int.fromString {
+      | Some(int) => [int]
+      | None => []
+      }
+    })
     ->Belt.Set.fromArray(~id=module(IntComp))
     ->Belt.Set.toArray
-    ->Belt.Array.reduce(
-        emptyQueue,
-        (acc, cur) => Some(insert(cur, acc))
-    )
+    ->Belt.Array.reduce(emptyQueue, (acc, cur) => Some(insert(cur, acc)))
 
-    switch queue {
-    | None => -1
-    | Some(node) => {
-        switch extract(node) {
-            | (_, None) => -1
-            | (_, Some({el})) => el
-        }
+  switch queue {
+  | None => -1
+  | Some(node) =>
+    switch extract(node) {
+    | (_, None) => -1
+    | (_, Some({el})) => el
     }
-    }
+  }
 }
